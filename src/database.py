@@ -49,6 +49,20 @@ def create_tables():
     finally:
         cur.close()
         conn.close()
+        
+def delete_car_by_id(car_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM cars WHERE id = %s", (car_id,))
+        conn.commit()
+        print(f"✅ ავტომობილი ID-ით {car_id} წარმატებით წაიშალა.")
+    except Exception as e:
+        print(f"❌ შეცდომა წაშლისას: {e}")
+        conn.rollback()
+    finally:
+        cur.close()
+        conn.close()
 
 if __name__ == "__main__":
     create_tables()
