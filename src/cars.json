@@ -1,0 +1,86 @@
+[
+    {
+        "brand": "Tesla Model 3",
+        "year": 2023,
+        "mileage": 5000,
+        "price": 42000,
+        "quantity": 2,
+        "warranty_period": 5,
+        "warranty_type": "Full Battery",
+        "e_sign_eligible": true,
+        "type": "Electric",
+        "extra_info": 75.0
+    },
+    {
+        "brand": "BMW X5",
+        "year": 2022,
+        "mileage": 15000,
+        "price": 55000,
+        "quantity": 1,
+        "warranty_period": 3,
+        "warranty_type": "Limited",
+        "e_sign_eligible": false,
+        "type": "Gasoline",
+        "extra_info": 3.0
+    },
+    {
+        "brand": "Nissan Leaf",
+        "year": 2020,
+        "mileage": 25000,
+        "price": 18000,
+        "quantity": 2,
+        "warranty_period": 1,
+        "warranty_type": "Standard",
+        "e_sign_eligible": true,
+        "type": "Electric",
+        "extra_info": 40.0
+    },
+    {
+        "brand": "Mercedes-Benz Actros",
+        "year": 2023,
+        "mileage": 1000,
+        "price": 130000,
+        "quantity": 15,
+        "warranty_period": 4,
+        "warranty_type": "Premium Truck",
+        "e_sign_eligible": false,
+        "type": "Truck",
+        "extra_info": 18000
+    },
+    {
+        "brand": "Porsche Taycan",
+        "year": 2024,
+        "mileage": 0,
+        "price": 95000,
+        "quantity": 5,
+        "warranty_period": 3,
+        "warranty_type": "Standard",
+        "e_sign_eligible": true,
+        "type": "Electric",
+        "extra_info": 93
+    },
+    {
+        "brand": "Audi RS e-tron GT",
+        "year": 2024,
+        "mileage": 0,
+        "price": 145000,
+        "quantity": 2,
+        "warranty_period": "2",
+        "warranty_type": "Full Battery",
+        "e_sign_eligible": true,
+        "type": "Electric",
+        "extra_info": 93.4
+    },
+    {
+        "brand": "Audi Q5",
+        "year": 2012,
+        "mileage": 0,
+        "price": 8000,
+        "quantity": 5,
+        "warranty_period": 0,
+        "warranty_type": "Standard",
+        "e_sign_eligible": false,
+        "type": "Gasoline",
+        "extra_info": 100
+    }
+]

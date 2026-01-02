@@ -1,0 +1,6 @@
+Tesla S,80,Electric,100
+Volvo FH,50,Truck,20
+Nissan Leaf,40,Electric,40
+Mercedes-Benz,90,Truck,15
+Volvo MAN,90,Truck,15
+Shervolet,70,Truck,25
