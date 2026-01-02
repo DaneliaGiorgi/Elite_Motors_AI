@@ -66,3 +66,4 @@ def delete_car_by_id(car_id):
 
 if __name__ == "__main__":
     create_tables()
+    delete_car_by_id(1)
