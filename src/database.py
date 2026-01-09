@@ -1,21 +1,28 @@
-import psycopg2
+import psycopg2 # type: ignore
 
-print("--- ფაილი გაეშვა! ---")
+print("--- File runing! ---")
 # database configuration
 DB_CONFIG = {
     "dbname": "postgres", 
     "user": "macbookpro15", 
-    "password": "", # usually emptuy
+    "password": "123", # usually emptuy
     "host": "localhost",
     "port": "5432"
 }
 
 def get_connection():
-    """ქმნის და აბრუნებს კავშირს ბაზასთან"""
-    return psycopg2.connect(**DB_CONFIG)
+    conn = psycopg2.connect(
+        dbname=DB_CONFIG["dbname"],
+        user=DB_CONFIG["user"],
+        password=DB_CONFIG["password"],
+        host=DB_CONFIG["host"],
+        port=DB_CONFIG["port"]
+    )
+    conn.autocommit = True  
+    return conn
 
 def create_tables():
-    """ქმნის ცხრილებს: users და cars"""
+    """Creates tables: users and cars"""
     users_sql = """
     CREATE TABLE IF NOT EXISTS users (
         user_id SERIAL PRIMARY KEY,
@@ -35,16 +42,15 @@ def create_tables():
         added_by INTEGER REFERENCES users(user_id)
     );
     """
-    
     conn = get_connection()
     cur = conn.cursor()
     try:
         cur.execute(users_sql)
         cur.execute(cars_sql)
         conn.commit()
-        print("✅ ბაზა მომზადებულია: ცხრილები users და cars შეიქმნა!")
+        print("✅ The database is ready: the users and cars tables have been created!")
     except Exception as e:
-        print(f"❌ შეცდომა ცხრილების შექმნისას: {e}")
+        print(f"❌ Error while creating tables: {e}")
         conn.rollback()
     finally:
         cur.close()
@@ -56,9 +62,9 @@ def delete_car_by_id(car_id):
     try:
         cur.execute("DELETE FROM cars WHERE id = %s", (car_id,))
         conn.commit()
-        print(f"✅ ავტომობილი ID-ით {car_id} წარმატებით წაიშალა.")
+        print(f"✅ Car ID {car_id} successufuly deleted.")
     except Exception as e:
-        print(f"❌ შეცდომა წაშლისას: {e}")
+        print(f"❌ Error while deleting.: {e}")
         conn.rollback()
     finally:
         cur.close()

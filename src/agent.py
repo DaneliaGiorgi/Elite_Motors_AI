@@ -1,4 +1,3 @@
-import psycopg2
 from database import get_connection
 from auth import AuthManager
 
@@ -41,10 +40,10 @@ class EliteMotorsAgent:
                 (brand, year, price, quantity, self.current_user['id'])
             )
             conn.commit()
-            return f"🏎️ მანქანა {brand} ({year}) წარმატებით დაემატა ინვენტარში!"
+            return f"🏎️ The car {brand} ({year}) has been successfully added to the inventory!"
         except Exception as e:
             conn.rollback()
-            return f"❌ შეცდომა დამატებისას: {e}"
+            return f"❌ Error while adding.: {e}"
         finally:
             cur.close()
             conn.close()
@@ -59,5 +58,5 @@ if __name__ == "__main__":
     
     # 2. if loggin add car
     if agent.current_user:
-        print(agent.add_new_car("Mercedes-AMG GT", 2024, 150000, 1))
+        print(agent.add_new_car("Porsche 911 GT3 RS", 2024, 100000, 2))
     

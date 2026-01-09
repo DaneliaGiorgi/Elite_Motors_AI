@@ -1,4 +1,3 @@
-import os
 import json
 from models import ElectroCar, GasolineCar, Truck
 from logger import ShowroomLogger
@@ -146,7 +145,7 @@ class Showroom:
         
         for item in self.inventory:
             if brand.lower().strip() in item.brand.lower() and int(item.year) == int(year):
-                if hasattr(item, field):
+                if field and hasattr(item, field):
                     # Convert numeric values correctly
                     try:
                         # Convert numeric values correctly
@@ -160,7 +159,7 @@ class Showroom:
                         # LOGGING SUCCESS: Record the successful update
                         ShowroomLogger.log(f"SUCCESS: Updated {item.brand} ({item.year}) - {field} is now {new_value}")
                         return True
-                    except (ValueError, TypeError):
+                    except (ValueError, TypeError) as e:
                         # LOGGING ERROR: Record conversion failure
                         ShowroomLogger.log_error(f"CONVERSION ERROR: Failed to update {field} for {brand}: {e}")
         

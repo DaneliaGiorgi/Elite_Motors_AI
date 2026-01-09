@@ -1,21 +1,20 @@
-import bcrypt
-import psycopg2
+import bcrypt # type: ignore
 from database import get_connection
 
 class AuthManager:
     @staticmethod
     def hash_password(password):
-        """პაროლის დაშიფვრა (Hashing)"""
+        """Password hashing (Hashing)"""
         salt = bcrypt.gensalt()
         return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
     @staticmethod
     def check_password(password, hashed_password):
-        """პაროლის შემოწმება ვალიდობისთვის"""
+        """Password validation check"""
         return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
     def register_user(self, username, password, role='user'):
-        """მომხმარებლის ჩაწერა ბაზაში"""
+        """Saving the user to the database"""
         hashed_pw = self.hash_password(password)
         conn = get_connection()
         cur = conn.cursor()
@@ -25,16 +24,16 @@ class AuthManager:
                 (username, hashed_pw, role)
             )
             conn.commit()
-            print(f"✅ მომხმარებელი '{username}' წარმატებით დარეგისტრირდა!")
+            print(f"✅ User '{username}' Successfully registered!")
         except Exception as e:
-            print(f"❌ რეგისტრაციის შეცდომა: {e}")
+            print(f"❌ registration Error: {e}")
             conn.rollback()
         finally:
             cur.close()
             conn.close()
 
-# მოდი პირდაპირ შენი ადმინ მომხმარებელი შევქმნათ
+# create your admin user directly
 if __name__ == "__main__":
     auth = AuthManager()
-    # შეგიძლია სახელი და პაროლი შეცვალო სურვილისამებრ
+    # change the username and password
     auth.register_user("admin_giorgi", "pass123", role="admin")
