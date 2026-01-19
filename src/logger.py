@@ -22,10 +22,10 @@ class ShowroomLogger:
     @staticmethod
     def log(message):
         """Prints message to console and writes to showroom.log file."""
-        print(f"📝 [SYSTEM LOG]: {message}")
+        print(f"[SYSTEM LOG]: {message}")
         logging.info(message)
     
     @staticmethod
     def log_error(error_msg):
         """Records errors specifically with an ERROR tag."""
-        print(f"❌ [ERROR LOG]: {error_msg}")
+        print(f"[ERROR LOG]: {error_msg}")

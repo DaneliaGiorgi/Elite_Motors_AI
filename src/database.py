@@ -1,16 +1,17 @@
 import psycopg2 # type: ignore
 
-print("--- File runing! ---")
-# database configuration
+# Database configuration settings
 DB_CONFIG = {
     "dbname": "postgres", 
     "user": "macbookpro15", 
-    "password": "123", # usually emptuy
+    "password": "", 
     "host": "localhost",
     "port": "5432"
 }
 
 def get_connection():
+    """Establishes and returns a connection to the PostgreSQL database."""
+    # Explicitly passing arguments to satisfy Pylance type checking
     conn = psycopg2.connect(
         dbname=DB_CONFIG["dbname"],
         user=DB_CONFIG["user"],
@@ -22,7 +23,7 @@ def get_connection():
     return conn
 
 def create_tables():
-    """Creates tables: users and cars"""
+    """Initializes the database schema by creating users and cars tables."""
     users_sql = """
     CREATE TABLE IF NOT EXISTS users (
         user_id SERIAL PRIMARY KEY,
@@ -42,34 +43,19 @@ def create_tables():
         added_by INTEGER REFERENCES users(user_id)
     );
     """
+    #Get connetion to db
     conn = get_connection()
     cur = conn.cursor()
     try:
         cur.execute(users_sql)
         cur.execute(cars_sql)
-        conn.commit()
-        print("✅ The database is ready: the users and cars tables have been created!")
+        print("Database initialized: Tables are ready.")
     except Exception as e:
-        print(f"❌ Error while creating tables: {e}")
-        conn.rollback()
+        print(f"Initialization Error: {e}")
     finally:
-        cur.close()
-        conn.close()
-        
-def delete_car_by_id(car_id):
-    conn = get_connection()
-    cur = conn.cursor()
-    try:
-        cur.execute("DELETE FROM cars WHERE id = %s", (car_id,))
-        conn.commit()
-        print(f"✅ Car ID {car_id} successufuly deleted.")
-    except Exception as e:
-        print(f"❌ Error while deleting.: {e}")
-        conn.rollback()
-    finally:
+        #Close connetion to db
         cur.close()
         conn.close()
 
 if __name__ == "__main__":
     create_tables()
-    delete_car_by_id(1)
