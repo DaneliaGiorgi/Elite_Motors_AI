@@ -6,7 +6,7 @@ class Showroom:
     def __init__(self, name, address):
         self.name = name
         self.address = address
-        self.inventory = [] # This will be populated from the Database by the Agent
+        self.inventory = [] #This will be populated from the Database by the Agent
 
     def get_financials_report(self, inventory_data):
         """Calculates total value and unit counts from provided database records."""
@@ -14,8 +14,8 @@ class Showroom:
             ShowroomLogger.log_error("Attempted to generate report for empty inventory.")
             return "Inventory is empty."
         
-        # inventory_data schema: (car_id, brand, year, price, quantity)
-        # Price is at index 3, Quantity is at index 4
+        #inventory_data schema: (car_id, brand, year, price, quantity)
+        #Price is at index 3, Quantity is at index 4
         total_value = sum(row[3] * row[4] for row in inventory_data)
         total_units = sum(row[4] for row in inventory_data)
         avg_price = total_value / total_units if total_units > 0 else 0
