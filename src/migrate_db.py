@@ -1,7 +1,7 @@
 from database import get_connection
 
 def migrate():
-    """Professional way to update database schema without losing data."""
+    """update database schema without losing data."""
     #Connect to database
     conn = get_connection()
     cur = conn.cursor()
