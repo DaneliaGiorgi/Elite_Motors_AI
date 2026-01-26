@@ -143,7 +143,7 @@ class EliteMotorsAgent:
                 return "The showroom is currently empty."
             
             total_units = sum(car[3] for car in cars)
-            summary = f"📋 Elite Motors Inventory Report:\n"
+            summary = f"Elite Motors Inventory Report:\n"
             summary += f"• Total Models: {len(cars)}\n"
             summary += f"• Total Units in Stock: {total_units}\n"
             summary += "------------------------------\n"

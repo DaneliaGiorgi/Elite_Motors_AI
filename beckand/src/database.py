@@ -29,6 +29,8 @@ def create_tables():
     users_sql = """
     CREATE TABLE IF NOT EXISTS users (
         user_id SERIAL PRIMARY KEY,
+        name VARCHAR(50),       
+        last_name VARCHAR(50),  
         username VARCHAR(50) UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
         role VARCHAR(20) DEFAULT 'user',
@@ -67,6 +69,30 @@ def create_tables():
         print(f"Initialization Error: {e}")
     finally:
         #close the cursor and connection to free up resources
+        cur.close()
+        conn.close()
+        
+#Find user for authentication
+def get_user_by_email(email: str):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT * FROM users WHERE username = %s", (email,))
+        return cur.fetchone()
+    finally:
+        cur.close()
+        conn.close()
+
+#Create user for registration
+def save_user(name: str, last_name: str, email: str, password_hash: str, role: str):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            "INSERT INTO users (name, last_name, username, password_hash, role) VALUES (%s, %s, %s, %s, %s)",
+            (name, last_name, email, password_hash, role)
+        )
+    finally:
         cur.close()
         conn.close()
 
