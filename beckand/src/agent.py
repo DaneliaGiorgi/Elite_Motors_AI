@@ -58,7 +58,7 @@ class EliteMotorsAgent:
         try:
             # Add car in PostgreSQL
             cur.execute(
-                "INSERT INTO cars (brand, year, price, quantity) VALUES (%s, %s, %s, %s)",
+                "INSERT INTO vehicles (brand, year, price, quantity) VALUES (%s, %s, %s, %s)",
                 (brand, year, price, quantity)
             )
             return f"Success! {brand} ({year}) has been added to the inventory."
@@ -76,7 +76,7 @@ class EliteMotorsAgent:
         cur = conn.cursor()
         try:
             #check whether the quantity is sufficient
-            cur.execute("SELECT quantity FROM cars WHERE car_id = %s", (car_id,))
+            cur.execute("SELECT quantity FROM vehicles WHERE car_id = %s", (car_id,))
             res = cur.fetchone()
             
             if not res or res[0] < quantity:
@@ -100,7 +100,7 @@ class EliteMotorsAgent:
         conn = get_connection()
         cur = conn.cursor()
         try:
-            cur.execute("SELECT brand, year, price, quantity FROM cars")
+            cur.execute("SELECT brand, year, price, quantity FROM vehicles")
             cars = cur.fetchall()
             
             if not cars:
@@ -121,4 +121,3 @@ class EliteMotorsAgent:
             #Close cursor and connection
             cur.close()
             conn.close()
-
