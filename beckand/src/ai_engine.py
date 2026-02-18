@@ -4,32 +4,32 @@ from dotenv import load_dotenv
 from agent import EliteMotorsAgent
 from database import get_connection
 
-# .env ფაილის ჩატვირთვა
+#Loading .env file
 load_dotenv()
 
 API_KEY = os.getenv("GOOGLE_API_KEY")
-# ვიყენებთ შენს სიაში არსებულ Gemini 2.5 Flash მოდელს
+#Use Gemini 2.5 Flash model
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
 
 motor_agent = EliteMotorsAgent()
 
 def chat_with_ai(user_input: str):
-    # 1. ვიღებთ რეალურ მონაცემებს ბაზიდან
+    #Fetching real data from the database
     inventory = motor_agent.get_inventory()
     
-    # DEBUG პრინტი, რომ ვნახოთ რატომ გვიწერს "relation cars does not exist"
+    # DEBUG Print it to see why it’s showing "relation cars does not exist"
     print("\n" + "="*40)
     print(f"DEBUG - მონაცემთა ბაზის პასუხი: {inventory}")
     print("="*40 + "\n")
 
-    # 2. ვამზადებთ ინსტრუქციას AI-სთვის
+    #Instuction for AI
     prompt = f"""
-    შენ ხარ Elite Motors-ის დამხმარე ასისტენტი. 
-    აი ჩვენი ამჟამინდელი ინვენტარი:
+    You are Elite Motors asistent. 
+    Here is our current inventory:
     {inventory}
 
-    მომხმარებლის კითხვა: {user_input}
-    უპასუხე ქართულ ენაზე, მეგობრულად და პროფესიონალურად.
+    Question from user: {user_input}
+    Answer in Georgian, in a friendly and professional manner.
     """
 
     payload = {
@@ -43,18 +43,17 @@ def chat_with_ai(user_input: str):
         if response.status_code == 200:
             return data['candidates'][0]['content']['parts'][0]['text']
         else:
-            return f"შეცდომა API-სთან: {data.get('error', {}).get('message', 'Unknown error')}"
+            return f"Error API: {data.get('error', {}).get('message', 'Unknown error')}"
     except Exception as e:
-        return f"სისტემური შეცდომა: {str(e)}"
+        return f"System Error: {str(e)}"
     
     
     
 def get_inventory(self):
-    """ბაზიდან მონაცემების წამოღება 'vehicles' ცხრილიდან."""
+    """Retrieving data from the 'vehicles' table in the database."""
     conn = get_connection()
     cur = conn.cursor()
     try:
-        # ახლა უკვე ვიცით, რომ ცხრილს 'vehicles' ჰქვია
         cur.execute("SELECT brand, year, price, quantity FROM vehicles")
         cars = cur.fetchall()
         
@@ -78,7 +77,3 @@ def get_inventory(self):
 
 if __name__ == "__main__":
     print("Elite Motors AI Engine is running...")
-    # ტესტ-კითხვა
-    response = chat_with_ai("რა მანქანები გყავთ გაყიდვაში?")
-    print("\nAI-ს პასუხი:")
-    print(response)
