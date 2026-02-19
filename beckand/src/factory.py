@@ -7,15 +7,15 @@ from langchain_community.agent_toolkits import create_sql_agent
 load_dotenv()
 
 def create_motors_agent(user_role="manager"):
-    #DATABASE_URL safe reading
+    #Secure database connection configuration
     raw_url = os.getenv("DATABASE_URL")
-    
     if not raw_url:
         raise ValueError("Error: DATABASE_URL not found in .env file!")
     
     db_url = raw_url.replace("postgresql://", "postgresql+psycopg2://", 1)
     
-    #Satabase configuration
+    #Create SQLDatabase by role
+    #If role is 'manager', agent is allowed to perform SELECT operations only
     db = SQLDatabase.from_uri(
         db_url, 
         include_tables=['vehicles'],
@@ -29,26 +29,42 @@ def create_motors_agent(user_role="manager"):
         temperature=0
     )
 
-    #Strict instruction (Prompt)
+    #Role based system prompt
+    role_instruction = ""
+    
+    if user_role == "admin":
+        role_instruction = """
+        ROLE: ADMINISTRATOR (Full Access).
+        - You can ADD, DELETE, and UPDATE records in the 'vehicles' table.
+        - If the user asks to "Add a car", "Change price", or "Delete", perform the SQL action.
+        """
+    else:
+        role_instruction = """
+        ROLE: MANAGER (Read-Only).
+        - You can ONLY read data using SELECT.
+        - NEVER attempt to INSERT, UPDATE, or DELETE. If asked, politely refuse.
+        """
+
     system_prefix = f"""
-        You are the Elite Motors AI Assistant. Current User Role: {user_role}.
+        You are the Elite Motors AI Assistant. Current User Role: {user_role.upper()}.
+        {role_instruction}
         
         STRICT OPERATING RULES:
-        1. LANGUAGE: Respond in the SAME language the user uses.
-        2. GREETINGS: If the user just says "Hello" or "Hi", simply greet them back politely. 
-        Do NOT query the database or show car information unless specifically asked.
-        3. SEARCHING: If the user asks about car availability, quantity, or specific details, 
-        then immediately use 'sql_db_query' to fetch data from the 'vehicles' table.
-        4. NO CLARIFICATION: When a car question is asked, do not ask follow-up questions, 
-        just show the database results.
-        5. PRIVACY: Only show what is in the database.
-        6.Return ONLY the final answer to the user. Do not include your internal reasoning or 'Thought' process in the response.
+        1. MULTILINGUAL ADAPTATION: Identify the user's language and respond EXCLUSIVELY in that language. 
+           (e.g., if the user speaks Spanish, you must translate everything to Spanish).
+        2. DATABASE TRANSLATION: When displaying car details, translate the database column names 
+           (Brand, Year, Price, Mileage, etc.) into the user's language naturally.
+        3. GREETINGS: Respond to greetings in the same language they were given.
+        4. EXECUTION: Use tools immediately for any car-related requests.
+        5. NO CLARIFICATION: Show database results directly without follow-up questions.
+        6. FINAL ANSWER: Return ONLY the final, translated output. Do not show internal reasoning.
     """
 
+    #Create agent
     return create_sql_agent(
         llm=llm,
         db=db,
-        agent_type="tool-calling",
+        agent_type="tool-calling", 
         verbose=False,
         handle_parsing_errors=True,
         prefix=system_prefix
