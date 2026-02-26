@@ -1,7 +1,6 @@
 import os
 from typing import Annotated, TypedDict, Literal
 from dotenv import load_dotenv
-
 from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
@@ -9,8 +8,28 @@ from langgraph.checkpoint.memory import MemorySaver
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
+from pydantic import BaseModel, Field, validator
+from logger import ShowroomLogger
 
 load_dotenv()
+
+class VehicleValidation(BaseModel):
+    brand: str = Field(description="Brand and model of the vehicle")
+    year: int = Field(gt=1900, lt=2027, description="Manufacturing year")
+    mileage: float = Field(ge=0)
+    price: float = Field(gt=0)
+    quantity: int = Field(ge=1)
+    vehicle_type: str = Field(description="sedan, suv, truck, electric")
+    engine_volume: float = Field(default=0.0)
+    battery_capacity: float = Field(default=0.0)
+    max_load: float = Field(default=0.0)
+
+    @validator('vehicle_type')
+    def validate_type(cls, v):
+        allowed = ['sedan', 'suv', 'truck', 'electric']
+        if v.lower() not in allowed:
+            raise ValueError(f"Type must be one of {allowed}")
+        return v.lower()
 
 #Define the State Schema
 class AgentState(TypedDict):
@@ -50,6 +69,14 @@ def create_motors_agent(user_role: str = "manager"):
     def call_model(state: AgentState):
         messages = state['messages']
         role = state.get('user_role', 'manager')
+        
+        validation_rules = """
+        VALIDATION RULES:
+        - Year must be between 1901 and 2026.
+        - Price and Quantity must be positive numbers.
+        - Vehicle type must be one of: [sedan, suv, truck, electric].
+        If the user provides invalid data, point out the specific error in Georgian and ask again.
+        """
         
         #Core System Instructions using 'vehicles' table context
         system_prompt = f"""
@@ -102,12 +129,21 @@ def create_motors_agent(user_role: str = "manager"):
         Columns: brand, year, mileage, price, quantity, warranty_period, warranty_type, e_sign_eligible, vehicle_type, battery_capacity, max_load, engine_volume.
         
         Always respond in the user's language. Keep responses professional, brief, and direct.
+        {validation_rules}
         """
         
         #Bind tools to the model and invoke
         model_with_tools = llm.bind_tools(tools)
         response = model_with_tools.invoke([("system", system_prompt)] + messages)
         
+        #logger
+        if hasattr(response, "tool_calls") and response.tool_calls:
+            for tool in response.tool_calls:
+                #The tool is defined here because it’s inside the loop
+                ShowroomLogger.log(f"ADMIN ACTION: Executing {tool['name']} with args: {tool['args']}")
+        elif response.content:
+            ShowroomLogger.log(f"AI Response: {response.content[:50]}...")
+            
         return {"messages": [response]}
 
     #Build the StateGraph
