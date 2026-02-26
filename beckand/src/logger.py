@@ -22,7 +22,7 @@ class ShowroomLogger:
     @staticmethod
     def log(message):
         """Prints message to console and writes to showroom.log file."""
-        print(f"[SYSTEM LOG]: {message}")
+        #print(f"[SYSTEM LOG]: {message}")
         logging.info(message)
     
     @staticmethod
