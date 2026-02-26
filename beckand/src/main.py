@@ -1,4 +1,6 @@
 import sys
+from typing import Any, cast
+from langchain_core.runnables import RunnableConfig
 import time
 from auth import AuthManager
 from factory import create_motors_agent
@@ -11,7 +13,7 @@ def start_app():
     print("      ELITE MOTORS AI - SECURE INTERFACE      ")
     print("="*45 + "\n")
 
-    #NEW: Choice for Portfolio Demo
+    #Login or Registration
     print("[1] Login")
     print("[2] Register (New Role)")
     choice = input("\nSelect Option (1/2): ").strip()
@@ -20,32 +22,34 @@ def start_app():
         print("\n--- REGISTRATION MODE ---")
         name = input("Enter First Name: ").strip()
         last_name = input("Enter Last Name: ").strip()
-        username = input("Enter Email/Username: ").strip()
-        password = input("Enter Password: ").strip()
-        role = input("Enter Role (admin/manager): ").strip().lower()
+        username_input = input("Enter Email/Username: ").strip()
+        password_input = input("Enter Password: ").strip()
+        role_input = input("Enter Role (admin/manager): ").strip().lower()
         
-        if role not in ['admin', 'manager']:
+        if role_input not in ['admin', 'manager']:
             print("[SYSTEM]: Invalid role. Defaulting to 'manager'.")
-            role = 'manager'
+            role_input = 'manager'
             
-        auth.register_user(name, last_name, username, password, role)
+        auth.register_user(name, last_name, username_input, password_input, role_input)
         print("\n[SYSTEM]: Account created! Proceeding to auto-login...")
         
-        #Authorization is automatically performed with the same data
+        #Authenticate immediately after registration
+        auth_result = auth.login_user(username_input, password_input)
     else:
         #Standard Login Phase
-        username = input("\nEnter Username: ").strip()
-        password = input("Enter Password: ").strip()
-    
-    #Authentication (Existing Logic) 
-    auth_result = auth.login_user(username, password)
+        username_input = input("\nEnter Username: ").strip()
+        password_input = input("Enter Password: ").strip()
+        auth_result = auth.login_user(username_input, password_input)
 
+    #Validate Authentication Results
     if isinstance(auth_result, str):
         print(f"\n[AUTH ERROR]: {auth_result}")
         return
 
+    #these variables are safely bound
     token = auth_result["token"]
     user_role = auth_result["role"]
+    username = username_input # Use the input from login/reg
     
     print(f"\n[SYSTEM]: Access Granted. Session active for {ACCESS_TOKEN_EXPIRE_MINUTES} minutes.")
     print(f"[SYSTEM]: Hello {username}! Access Level: {user_role.upper()}\n")
@@ -53,17 +57,24 @@ def start_app():
     #Agent Initialization
     try:
         agent_executor = create_motors_agent(user_role=user_role)
-        print("Connected to Elite Motors Database...\n")
+        #Type cast config for Pylance safety
+        config = cast(RunnableConfig, {"configurable": {"thread_id": username}})
+        print("Connected to Elite Motors Database (LangGraph Active)...\n")
     except Exception as e:
         print(f"[CRITICAL ERROR]: Failed to initialize Agent: {e}")
         return
 
-    #Secure Interaction Loop
+    #Secure Interaction Loop (The only loop needed)
     while True:
+        #Token validation for session security
         decoded_token = auth.verify_token(token)
         
         if isinstance(decoded_token, str):
-            print(f"\n[SECURITY]: {decoded_token} Re-authentication required.")
+            print("\n" + "!"*45)
+            print("  SESSION EXPIRED (Security Timeout)        ")
+            print("  Your test session has ended.              ")
+            print("  Please log in again to continue.          ")
+            print("!"*45 + "\n")
             break
 
         user_input = input(f"{username} ({user_role}): ").strip()
@@ -76,14 +87,21 @@ def start_app():
             continue
 
         try:
-            response = agent_executor.invoke({"input": user_input})
-            output = response.get("output", "")
+            #LangGraph State Input
+            input_data = {
+                "messages": [("user", user_input)],
+                "user_role": user_role
+            }
             
-            if str(output).strip():
-                print(f"\nAI Assistant: {output}\n")
-            else:
-                print("\nAI Assistant: System returned an empty response.\n")
-
+            #Agent Execution
+            response: Any = agent_executor.invoke(input_data, config=config) # type: ignore
+            
+            if "messages" in response:
+                output = response["messages"][-1].content
+                if output.strip():
+                    print(f"\nAI Assistant: {output}\n")
+                else:
+                    print("\nAI Assistant: System returned an empty response.\n")
         except Exception as e:
             print(f"\n[EXECUTION ERROR]: {e}\n")
         

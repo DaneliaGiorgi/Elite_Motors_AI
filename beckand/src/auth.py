@@ -6,7 +6,7 @@ from database import get_connection
 from security import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 #Load secret key from environment variables
-SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 class AuthManager:
     """Handles user registration, authentication, and brute-force protection."""
@@ -125,6 +125,9 @@ class AuthManager:
     @staticmethod       
     def generate_token(username, role):
         """Creates a secure JWT token that expires in 1 hour."""
+        if not isinstance(SECRET_KEY, str):
+            raise ValueError("SECRET_KEY must be a valid string. Check your .env file.")
+        
         expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         payload = {
             'username': username,
@@ -136,6 +139,9 @@ class AuthManager:
     @staticmethod
     def verify_token(token):
         """Verifies the JWT token and returns the payload if valid."""
+        if not isinstance(SECRET_KEY, str):
+            raise ValueError("SECRET_KEY must be a valid string.")
+        
         try:
             return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         except jwt.ExpiredSignatureError:
