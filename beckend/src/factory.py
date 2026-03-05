@@ -10,6 +10,8 @@ from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from pydantic import BaseModel, Field, validator
 from logger import ShowroomLogger
+from langgraph.checkpoint.postgres import PostgresSaver
+
 
 load_dotenv()
 
@@ -130,6 +132,18 @@ def create_motors_agent(user_role: str = "manager"):
         
         Always respond in the user's language. Keep responses professional, brief, and direct.
         {validation_rules}
+        
+        TECHNICAL RULES FOR SQL:
+        1. When querying prices or numbers, ALWAYS format the result as a plain number (e.g., "8000" instead of Decimal('8000.00')).
+        2. For 'e_sign_eligible' column: It is a BOOLEAN. 
+        - If the user says "კი", "დიახ" or "yes", use 'true'.
+        - If the user says "არა" or "no", use 'false'.
+        - NEVER ask the user for "True or False" literally. Translate their "კი/არა" yourself.
+        3. COUNTING: To count vehicles, use 'SELECT COUNT(*) FROM vehicles'. Do not count by distinct brands unless asked.
+
+        CLEAN RESPONSE RULE:
+        - Never show technical terms like 'Decimal', 'tuple', or 'list' to the user. 
+        - Always respond with a clean, conversational Georgian sentence.
         """
         
         #Bind tools to the model and invoke
